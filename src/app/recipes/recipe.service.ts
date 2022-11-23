@@ -1,4 +1,5 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 
 import { Recipe } from './recipe.model';
 import { Ingredient } from '../shared/ingredient.model';
@@ -6,48 +7,30 @@ import { ShoppingListService } from '../shopping-list/shopping-list.service';
 
 @Injectable()
 export class RecipeService {
-  recipeSelected = new EventEmitter<Recipe>();
+  recipesChanged = new Subject<Recipe[]>();
 
-  private recipes: Recipe[] = [
-    new Recipe(
-      'Classic Veg Burger',
-      'A Classic Veg Burger - just awesome!',
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9uYeiMnxhRkmWvWWnEsKfspye-aZ_Suq1FA&usqp=CAU',
-      [
-        new Ingredient('cans black beans, rinsed and drained', 2),
-        new Ingredient('medium yellow onion, chopped', 1/2),
-        new Ingredient( 'Romaine lettuce leaves',4),
-        new Ingredient('cloves garlic, minced',2),
-        new Ingredient('plus 2 tbsp. mayonnaise',1/2),
-        new Ingredient('bread crumbs',3/4),
-        new Ingredient('Freshly ground black pepper',1/2),
-        new Ingredient('kosher salt',1/2),
-        new Ingredient('canola oil',2),
-        new Ingredient('slices white cheddar',4),
-        new Ingredient('ketchup',3),
-        new Ingredient('Hamburger buns',4),
-        new Ingredient('tomato, sliced',1),
-        new Ingredient('Romaine lettuce leaves',4),
-      ]),
-    new Recipe('Cheesecake',
-      'What else you need to say?',
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRm4YiVYBWpY2pxH0Ifsv4kvr-3nxAVWT2Msw&usqp=CAU',
-      [
-        new Ingredient('Butter, for coating the pan', 1),
-        new Ingredient('full-fat cream cheese', 2),
-        new Ingredient('cup granulated sugar',1),
-        new Ingredient('tablespoons all-purpose flour',2),
-        new Ingredient('teaspoon salt',1/8),
-        new Ingredient('cup sour cream',1/2),
-        new Ingredient('teaspoon vanilla extract',1),
-        new Ingredient('large eggs',3),
-        new Ingredient('large egg yolk',1),
-        new Ingredient('whole graham cracker rectangles (6 ounces)',12),
-        new Ingredient('tablespoons unsalted butter',5),
-      ])
-  ];
+  // private recipes: Recipe[] = [
+  //   new Recipe(
+  //     'Tasty Schnitzel',
+  //     'A super-tasty Schnitzel - just awesome!',
+  //     'https://upload.wikimedia.org/wikipedia/commons/7/72/Schnitzel.JPG',
+  //     [new Ingredient('Meat', 1), new Ingredient('French Fries', 20)]
+  //   ),
+  //   new Recipe(
+  //     'Big Fat Burger',
+  //     'What else you need to say?',
+  //     'https://upload.wikimedia.org/wikipedia/commons/b/be/Burger_King_Angus_Bacon_%26_Cheese_Steak_Burger.jpg',
+  //     [new Ingredient('Buns', 2), new Ingredient('Meat', 1)]
+  //   )
+  // ];
+  private recipes: Recipe[] = [];
 
   constructor(private slService: ShoppingListService) {}
+
+  setRecipes(recipes: Recipe[]) {
+    this.recipes = recipes;
+    this.recipesChanged.next(this.recipes.slice());
+  }
 
   getRecipes() {
     return this.recipes.slice();
@@ -59,5 +42,20 @@ export class RecipeService {
 
   addIngredientsToShoppingList(ingredients: Ingredient[]) {
     this.slService.addIngredients(ingredients);
+  }
+
+  addRecipe(recipe: Recipe) {
+    this.recipes.push(recipe);
+    this.recipesChanged.next(this.recipes.slice());
+  }
+
+  updateRecipe(index: number, newRecipe: Recipe) {
+    this.recipes[index] = newRecipe;
+    this.recipesChanged.next(this.recipes.slice());
+  }
+
+  deleteRecipe(index: number) {
+    this.recipes.splice(index, 1);
+    this.recipesChanged.next(this.recipes.slice());
   }
 }
